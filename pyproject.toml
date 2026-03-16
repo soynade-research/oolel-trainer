@@ -1,0 +1,58 @@
+[project]
+name = "oolel-trainer"
+version = "0.1.0"
+description = "Training pipeline for oolel models"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "torch==2.8.0",
+    "torchvision==0.23.0",
+    "torchaudio==2.8.0",
+    "packaging",
+    "ninja",
+    "transformers==4.57.6",
+    "trl>=0.25.0",
+    "datasets>=3.0.0",
+    "accelerate>=1.12.0",
+    "tensorboard>=2.19.0",
+    "huggingface-hub",
+    "setuptools",
+    "wheel",
+]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu128" }
+torchvision = { index = "pytorch-cu128" }
+torchaudio = { index = "pytorch-cu128" }
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=9.0.2",
+  "ruff>=0.14.10",
+]
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.format]
+indent-style = "space"
+docstring-code-format = true
+
+[tool.ruff.lint]
+extend-select = ["E501"]
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    # Ignore SWIG warnings from third-party libraries
+    "ignore:.*builtin type SwigPyPacked.*:DeprecationWarning",
+    "ignore:.*builtin type SwigPyObject.*:DeprecationWarning",
+]

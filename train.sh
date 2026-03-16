@@ -1,0 +1,17 @@
+python src/train.py \
+    --model_name_or_path  "gemma-3-270m-it" \
+    --dataset_name        "soynade-research/fineweb_synthetic" \
+    --output_dir          "./output/oolel-small" \
+    --hub_model_id        "soynade-research/oolel-lit-gemma" \
+    --max_length          4096 \
+    --per_device_train_batch_size   2 \
+    --per_device_eval_batch_size    2 \
+    --gradient_accumulation_steps   8 \
+    --learning_rate       2e-5 \
+    --epochs              3 \
+    --lr_scheduler_type   cosine \
+    --warmup_ratio        0.05 \
+    --weight_decay        0.01 \
+    --max_grad_norm       1.0 \
+    --logging_steps       100 \
+    --report_to           tensorboard
