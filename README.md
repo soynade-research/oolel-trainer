@@ -20,7 +20,7 @@ uv sync && uv pip install flash-attn==2.8.3 --no-build-isolation
 
 ## Training
 
-We recommend running inside a tmux session:
+We recommend running inside a tmux session to keep training alive over SSH:
 
 ```bash
 apt-get update && apt-get install -y tmux
@@ -35,17 +35,10 @@ sh train.sh
 
 All hyperparameters are configured directly in `train.sh`.
 
-## Monitoring
-
-```bash
-watch -n 1 nvidia-smi
-tensorboard --logdir output/oolel-small
-```
-
 ## Tests
-
+Run the unit tests with:
 ```bash
-pytest tests/
+uv run pytest
 ```
 
 ## Citation

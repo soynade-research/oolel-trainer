@@ -4,7 +4,6 @@ from datasets import Dataset, DatasetDict
 from unittest.mock import MagicMock, patch
 
 
-
 @pytest.fixture
 def args():
     return types.SimpleNamespace(
@@ -12,10 +11,13 @@ def args():
         dataset_name="soynade-research/fineweb_synthetic",
         output_dir="./output/oolel-small",
         hub_model_id="",
+        attn_implementation="eager",
         max_length=4096,
         per_device_train_batch_size=2,
         per_device_eval_batch_size=2,
         gradient_accumulation_steps=8,
+        gradient_checkpointing=False,
+        optim="adamw_torch_fused",
         learning_rate=2e-5,
         epochs=3,
         lr_scheduler_type="cosine",
@@ -37,14 +39,21 @@ def mock_tokenizer():
 
 @pytest.fixture
 def mock_model():
-    return MagicMock()
+    model = MagicMock()
+    model.dtype = None
+    return model
 
 
 @pytest.fixture
 def trainer(args, mock_tokenizer, mock_model):
-    with patch("src.train.AutoTokenizer.from_pretrained", return_value=mock_tokenizer), \
-         patch("src.train.AutoModelForCausalLM.from_pretrained", return_value=mock_model):
+    with (
+        patch("src.train.AutoTokenizer.from_pretrained", return_value=mock_tokenizer),
+        patch(
+            "src.train.AutoModelForCausalLM.from_pretrained", return_value=mock_model
+        ),
+    ):
         from src.train import OolelTrainer
+
         return OolelTrainer(args)
 
 
@@ -54,6 +63,15 @@ def valid_dataset():
 
 
 @pytest.fixture
+def valid_dataset_with_validation():
+    return DatasetDict(
+        {
+            "train": Dataset.from_dict({"messages": ["hi"] * 5}),
+            "validation": Dataset.from_dict({"messages": ["hello"] * 3}),
+        }
+    )
+
+
+@pytest.fixture
 def invalid_dataset():
     return DatasetDict({"train": Dataset.from_dict({"text": ["hi"] * 5})})
-
