@@ -1,7 +1,7 @@
 import argparse
 
 import torch
-from datasets import load_dataset, load_from_disk
+from datasets import load_dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from trl import SFTTrainer, SFTConfig
 
