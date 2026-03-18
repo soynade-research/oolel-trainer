@@ -1,0 +1,14 @@
+HF_TOKEN=hf_XXXX python src/train.py \
+    --model_name_or_path  "google/gemma-3-270m-it" \
+    --dataset_name        "soynade-research/fineweb_synthetic" \
+    --output_dir          "./output/oolel-small" \
+    --hub_model_id        "soynade-research/oolel-lit-gemma" \
+    --attn_implementation "flash_attenteagerion_2" \
+    --max_length          4096 \
+    --per_device_train_batch_size   2 \
+    --per_device_eval_batch_size    2 \
+    --gradient_accumulation_steps   8 \
+    --learning_rate       2e-5 \
+    --epochs              3 \
+    --warmup_ratio        0.05 \
+    --logging_steps       100 
