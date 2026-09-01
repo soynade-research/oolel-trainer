@@ -1,9 +1,10 @@
 import argparse
 
-import torch
 from datasets import load_dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from trl import SFTTrainer, SFTConfig
+from trl import SFTConfig, SFTTrainer
+
+from src.training_config import build_sft_config_kwargs, validate_dataset_schema
 
 
 class OolelTrainer:
@@ -23,48 +24,13 @@ class OolelTrainer:
 
     def load_data(self):
         dataset = load_dataset(self.args.dataset_name)
-        expected_col = "messages"
-        for split in dataset:
-            if expected_col not in dataset[split].column_names:
-                raise ValueError(
-                    f"Split '{split}' is missing the '{expected_col}' column. "
-                    "Dataset must be pre-formatted as a list of chat messages."
-                )
-        return dataset
+        return validate_dataset_schema(dataset)
 
     def train(self):
         dataset = self.load_data()
 
-        torch_dtype = self.model.dtype
-
         training_args = SFTConfig(
-            output_dir=self.args.output_dir,
-            max_length=self.args.max_length,
-            num_train_epochs=self.args.epochs,
-            per_device_train_batch_size=self.args.per_device_train_batch_size,
-            per_device_eval_batch_size=self.args.per_device_eval_batch_size,
-            gradient_accumulation_steps=self.args.gradient_accumulation_steps,
-            gradient_checkpointing=self.args.gradient_checkpointing,
-            optim=self.args.optim,
-            learning_rate=self.args.learning_rate,
-            lr_scheduler_type=self.args.lr_scheduler_type,
-            warmup_ratio=self.args.warmup_ratio,
-            weight_decay=self.args.weight_decay,
-            fp16=True if torch_dtype == torch.float16 else False,
-            bf16=True if torch_dtype == torch.bfloat16 else False,
-            max_grad_norm=self.args.max_grad_norm,
-            logging_steps=self.args.logging_steps,
-            eval_strategy="epoch" if "validation" in dataset else "no",
-            save_strategy="epoch",
-            save_total_limit=2,
-            load_best_model_at_end="validation" in dataset,
-            report_to=self.args.report_to,
-            hub_model_id=self.args.hub_model_id,
-            push_to_hub=bool(self.args.hub_model_id),
-            dataset_kwargs={
-                "add_special_tokens": False,
-                "append_concat_token": True,
-            },
+            **build_sft_config_kwargs(self.args, dataset, self.model.dtype)
         )
 
         # SFTTrainer handles chat-template formatting automatically when
