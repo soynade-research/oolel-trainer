@@ -19,14 +19,21 @@ jobs:
           enable-cache: true
           python-version: "3.11"
 
-      - name: Install project dependencies 
-        run: uv sync
+      - name: Install lightweight test dependencies
+        run: uv sync --only-group dev --locked
 
       - name: Run lint check
-        run: uv run ruff check .
+        run: uv run --no-sync ruff check .
 
       - name: Run format check
-        run: uv run ruff format --check .
+        run: uv run --no-sync ruff format --check .
 
-      - name: Run unit tests
-        run: uv run pytest
+      - name: Run deterministic unit tests with coverage
+        run: >-
+          uv run --no-sync
+          --with pytest-cov==7.1.0
+          --with coverage==7.14.0
+          pytest
+          --cov=src.training_config
+          --cov-report=term-missing
+          --cov-report=xml

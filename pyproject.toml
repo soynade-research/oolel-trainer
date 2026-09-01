@@ -51,8 +51,16 @@ docstring-code-format = true
 extend-select = ["E501"]
 
 [tool.pytest.ini_options]
+testpaths = ["tests"]
 filterwarnings = [
     # Ignore SWIG warnings from third-party libraries
     "ignore:.*builtin type SwigPyPacked.*:DeprecationWarning",
     "ignore:.*builtin type SwigPyObject.*:DeprecationWarning",
 ]
+
+[tool.coverage.run]
+branch = true
+source = ["src.training_config"]
+
+[tool.coverage.report]
+show_missing = true

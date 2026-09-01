@@ -36,9 +36,12 @@ sh train.sh
 All hyperparameters are configured directly in `train.sh`.
 
 ## Tests
-Run the unit tests with:
+The unit suite covers deterministic dataset validation and training configuration;
+it does not download models or datasets. Run it with:
 ```bash
-uv run pytest
+uv sync --only-group dev --locked
+uv run --no-sync --with pytest-cov==7.1.0 --with coverage==7.14.0 \
+  pytest --cov=src.training_config --cov-report=term-missing
 ```
 
 ## Citation

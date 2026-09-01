@@ -1,41 +1,34 @@
 import pytest
-from datasets import Dataset, DatasetDict
-from unittest.mock import patch
+
+from src.training_config import validate_dataset_schema
 
 
-def test_dataset_has_messages_column(valid_dataset):
-    assert "messages" in valid_dataset["train"].column_names
+class Split:
+    def __init__(self, columns=("messages",), size=1):
+        self.column_names = columns
+        self.size = size
+
+    def __len__(self):
+        return self.size
 
 
-def test_dataset_train_split_present(valid_dataset):
-    assert "train" in valid_dataset
+def test_valid_dataset_schema_is_returned_unchanged():
+    dataset = {"train": Split(), "validation": Split()}
+
+    assert validate_dataset_schema(dataset) is dataset
 
 
-def test_dataset_not_empty(valid_dataset):
-    assert len(valid_dataset["train"]) > 0
-
-
-def test_missing_messages_column_raises(trainer, invalid_dataset):
-    with patch("src.train.load_dataset", return_value=invalid_dataset):
-        with pytest.raises(ValueError, match="missing the 'messages' column"):
-            trainer.load_data()
-
-
-def test_load_data_succeeds_with_valid_dataset(trainer, valid_dataset):
-    with patch("src.train.load_dataset", return_value=valid_dataset):
-        result = trainer.load_data()
-        assert "train" in result
-        assert "messages" in result["train"].column_names
-
-
-def test_missing_column_checked_across_all_splits(trainer):
-    """load_data() loops over ALL splits — bad validation split must also raise."""
-    bad = DatasetDict(
-        {
-            "train": Dataset.from_dict({"messages": ["hi"] * 3}),
-            "validation": Dataset.from_dict({"text": ["hi"] * 3}),
-        }
-    )
-    with patch("src.train.load_dataset", return_value=bad):
-        with pytest.raises(ValueError, match="validation"):
-            trainer.load_data()
+@pytest.mark.parametrize(
+    ("dataset", "message"),
+    [
+        ({"validation": Split()}, "required 'train' split"),
+        ({"train": Split(size=0)}, "at least one example"),
+        (
+            {"train": Split(), "validation": Split(columns=("text",))},
+            "Split 'validation'.*messages",
+        ),
+    ],
+)
+def test_invalid_dataset_contract_is_rejected(dataset, message):
+    with pytest.raises(ValueError, match=message):
+        validate_dataset_schema(dataset)

@@ -1,4 +1,4 @@
-HF_TOKEN=hf_XXXX python src/train.py \
+HF_TOKEN=hf_XXXX python -m src.train \
     --model_name_or_path  "google/gemma-3-270m-it" \
     --dataset_name        "soynade-research/fineweb_synthetic" \
     --output_dir          "./output/oolel-small" \
@@ -11,4 +11,4 @@ HF_TOKEN=hf_XXXX python src/train.py \
     --learning_rate       2e-5 \
     --epochs              3 \
     --warmup_ratio        0.05 \
-    --logging_steps       100 
+    --logging_steps       100
